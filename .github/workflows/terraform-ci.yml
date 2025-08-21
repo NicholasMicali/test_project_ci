@@ -21,19 +21,14 @@ concurrency:
 env:
   TF_IN_AUTOMATION: 'true'
   TF_WORKING_DIR: terraform
-  # Flip this in the repo at: Settings → Secrets and variables → Actions → Variables
-  # Set ENABLE_TF_PLAN=true to enable `plan` in CI.
-  ENABLE_TF_PLAN: ${{ vars.ENABLE_TF_PLAN }}
 
 jobs:
-  fmt_validate:
-    name: fmt & validate
+  ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
 
@@ -51,23 +46,6 @@ jobs:
       - name: Validate
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform validate -no-color
-
-  plan:
-    if: ${{ env.ENABLE_TF_PLAN == 'true' }}
-    name: plan (optional)
-    runs-on: ubuntu-latest
-    needs: fmt_validate
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.5.7
-
-      - name: Init (no backend)
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform init -backend=false -input=false
 
       - name: Plan
         working-directory: ${{ env.TF_WORKING_DIR }}
